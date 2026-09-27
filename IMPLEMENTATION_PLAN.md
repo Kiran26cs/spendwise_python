@@ -350,7 +350,7 @@ Unknown category → row error (not auto-created). Valid rows are imported even 
 
 ### 8.1 Configuration (`core/config.py`)
 
-`Settings(BaseSettings)` fields: `app_name`, `app_version`, `environment` (`local|test|prod`), `debug`, `database_url` (default `postgresql+psycopg://spendwise:spendwise@localhost:5432/spendwise`), `log_level`, `log_json` (bool), `base_currency` (default `INR`), `fx_api_url`, `fx_timeout_seconds`, `fx_cache_ttl_seconds`, `cors_origins` (list), `max_upload_mb`.
+`Settings(BaseSettings)` fields: `app_name`, `app_version`, `environment` (`local|test|prod`), `debug`, `database_url` (default `postgresql+psycopg://spendwise:spendwise@localhost:5433/spendwise`), `log_level`, `log_json` (bool), `base_currency` (default `INR`), `fx_api_url`, `fx_timeout_seconds`, `fx_cache_ttl_seconds`, `cors_origins` (list), `max_upload_mb`.
 `get_settings()` decorated with `@lru_cache`. Provide `.env.example`.
 
 ### 8.2 Logging (`core/logging.py`, `core/middleware.py`, `core/context.py`)
@@ -465,13 +465,13 @@ Each phase ends with all quality gates green (Section 10) and a short summary of
 
 ### Phase 3 — Persistence
 
-- [ ] `infrastructure/db.py`: engine, `SessionLocal`, ORM models with `Mapped[]`.
-- [ ] Alembic setup + initial migration.
-- [ ] `infrastructure/mappers.py`: ORM ↔ domain functions.
-- [ ] `infrastructure/repositories.py`: `CategoryRepository`, `ExpenseRepository`, `AuditLogRepository` protocols; generic `SqlAlchemyRepository[T]` base; filtering + pagination in `ExpenseRepository.list(...)` returning `(items, total)`.
-- [ ] `infrastructure/unit_of_work.py`: `AbstractUnitOfWork` (context manager, `record()`, `commit()`, `rollback()`), `SqlAlchemyUnitOfWork`.
-- [ ] `tests/fakes.py`: `FakeRepository`, `FakeUnitOfWork`.
-- [ ] Health endpoint performs a real `SELECT 1`.
+- [x] `infrastructure/db.py`: engine, `SessionLocal`, ORM models with `Mapped[]`.
+- [x] Alembic setup + initial migration.
+- [x] `infrastructure/mappers.py`: ORM ↔ domain functions.
+- [x] `infrastructure/repositories.py`: `CategoryRepository`, `ExpenseRepository`, `AuditLogRepository` protocols; generic `SqlAlchemyRepository[T]` base; filtering + pagination in `ExpenseRepository.list(...)` returning `(items, total)`.
+- [x] `infrastructure/unit_of_work.py`: `AbstractUnitOfWork` (context manager, `record()`, `commit()`, `rollback()`), `SqlAlchemyUnitOfWork`.
+- [x] `tests/fakes.py`: `FakeRepository`, `FakeUnitOfWork`.
+- [x] Health endpoint performs a real `SELECT 1`.
 - **Tests (integration, PostgreSQL via testcontainers, one container per test session, each test in a rolled-back transaction):** add/get/list/filter/paginate; UoW rolls back when `commit()` not called or on exception; `Decimal("1250.50")` saved and read back is exactly equal.
 
 ### Phase 4 — Services + API (Categories & Expenses)

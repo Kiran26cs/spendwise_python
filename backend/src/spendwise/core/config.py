@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     app_version: str = __version__
     environment: Literal["local", "test", "prod"] = "local"
     debug: bool = False
-    database_url: str = "postgresql+psycopg://spendwise:spendwise@localhost:5432/spendwise"
+    database_url: str = "postgresql+psycopg://spendwise:spendwise@localhost:5433/spendwise"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     log_json: bool = True
     base_currency: str = "INR"

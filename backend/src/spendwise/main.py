@@ -23,6 +23,7 @@ from spendwise.core.context import CORRELATION_ID_HEADER, correlation_id_var
 from spendwise.core.exceptions import SpendWiseError
 from spendwise.core.logging import configure_logging
 from spendwise.core.middleware import CorrelationIdMiddleware
+from spendwise.infrastructure.db import create_db_engine, create_session_factory
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.http_client = http_client
         logger.info("Application started", extra={"environment": settings.environment})
         yield
+    app.state.engine.dispose()
     logger.info("Application stopped")
 
 
@@ -116,6 +118,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         },
     )
     app.state.settings = settings
+    app.state.engine = create_db_engine(settings.database_url)
+    app.state.session_factory = create_session_factory(app.state.engine)
 
     # Middleware added last runs first: correlation ID wraps CORS and everything else.
     app.add_middleware(

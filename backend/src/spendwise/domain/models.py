@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from enum import StrEnum
+from typing import Any
 
 from spendwise.core.exceptions import DomainValidationError
 
@@ -75,6 +76,19 @@ def _validate_decimal(
         raise DomainValidationError(f"{field} must not exceed {maximum}")
     if _decimal_places(value) > places:
         raise DomainValidationError(f"{field} must have at most {places} decimal places")
+
+
+@dataclass(frozen=True)
+class AuditLogEntry:
+    """One row of the audit trail. ``payload`` must already be JSON-serializable."""
+
+    id: int | None
+    event_type: str
+    entity_type: str
+    entity_id: int | None
+    payload: dict[str, Any]
+    correlation_id: str
+    occurred_at: datetime
 
 
 @dataclass(frozen=True)

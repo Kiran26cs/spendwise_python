@@ -1,16 +1,35 @@
 """Health endpoint, correlation ID header and Problem Details error responses."""
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from spendwise.api.routers import health
 from spendwise.core.exceptions import ConflictError
+
+
+@pytest.fixture(autouse=True)
+def database_up(monkeypatch: pytest.MonkeyPatch) -> None:
+    """These tests don't need PostgreSQL; the real ping is covered in test_health_db.py."""
+    monkeypatch.setattr(health, "ping", lambda engine: True)
 
 
 def test_health(client: TestClient) -> None:
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "0.1.0", "database": "unchecked"}
+    assert response.json() == {"status": "ok", "version": "0.1.0", "database": "ok"}
+
+
+def test_health_degraded_when_database_down(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(health, "ping", lambda engine: False)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    assert response.json() == {"status": "degraded", "version": "0.1.0", "database": "unavailable"}
 
 
 def test_correlation_id_generated(client: TestClient) -> None:
