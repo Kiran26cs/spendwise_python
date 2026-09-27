@@ -459,8 +459,8 @@ Each phase ends with all quality gates green (Section 10) and a short summary of
 
 ### Phase 2 — Domain
 
-- [ ] `domain/models.py`: enums, `Category`, `Expense`, `BudgetStatus`, `round_money()`, validation in `__post_init__`, `@property`, `__str__`/`__repr__` where useful.
-- [ ] `domain/events.py`: `DomainEvent` base + concrete events.
+- [x] `domain/models.py`: enums, `Category`, `Expense`, `BudgetStatus`, `round_money()`, validation in `__post_init__`, `@property`, `__str__`/`__repr__` where useful.
+- [x] `domain/events.py`: `DomainEvent` base + concrete events.
 - **Tests (unit, parametrized):** valid/invalid amounts, future dates, name rules, budget status math (under, exact, over, no budget).
 
 ### Phase 3 — Persistence
