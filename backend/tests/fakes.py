@@ -111,9 +111,9 @@ class FakeUnitOfWork(AbstractUnitOfWork):
 
     def __init__(self, publisher: EventPublisher | None = None) -> None:
         super().__init__(publisher)
-        self.categories = FakeCategoryRepository()
-        self.expenses = FakeExpenseRepository()
-        self.audit_logs = FakeAuditLogRepository()
+        self.categories: FakeCategoryRepository = FakeCategoryRepository()
+        self.expenses: FakeExpenseRepository = FakeExpenseRepository()
+        self.audit_logs: FakeAuditLogRepository = FakeAuditLogRepository()
         self.committed = False
         self.rollbacks = 0
 

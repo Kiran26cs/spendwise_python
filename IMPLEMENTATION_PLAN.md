@@ -88,7 +88,7 @@
 
 ### External service
 
-- FX rates: **Frankfurter API** (`https://api.frankfurter.app`) — free, no API key.
+- FX rates: **Frankfurter API** (`https://api.frankfurter.dev/v1`) — free, no API key.
 
 ---
 
@@ -476,13 +476,13 @@ Each phase ends with all quality gates green (Section 10) and a short summary of
 
 ### Phase 4 — Services + API (Categories & Expenses)
 
-- [ ] `services/event_bus.py` with `EventBus` + `AuditHandler`.
-- [ ] `services/category_service.py`, `services/expense_service.py` (record events on every change).
-- [ ] `infrastructure/fx_client.py` (both providers).
-- [ ] `api/types.py`: `Money`, `Budget`, `FxRate` (Section 8.6).
-- [ ] `api/schemas.py`: DTOs using `Money`/`FxRate` for all monetary fields, `Page[T]` generic, `ProblemDetail`.
-- [ ] `api/deps.py`: `get_settings`, `get_uow`, `get_fx_provider`, service providers.
-- [ ] Routers: `categories.py`, `expenses.py`, `audit.py`, `fx.py` (rates endpoint).
+- [x] `services/event_bus.py` with `EventBus` + `AuditHandler`.
+- [x] `services/category_service.py`, `services/expense_service.py` (record events on every change).
+- [x] `infrastructure/fx_client.py` (both providers).
+- [x] `api/types.py`: `Money`, `Budget`, `FxRate` (Section 8.6).
+- [x] `api/schemas.py`: DTOs using `Money`/`FxRate` for all monetary fields, `Page[T]` generic, `ProblemDetail`.
+- [x] `api/deps.py`: `get_settings`, `get_uow`, `get_fx_provider`, service providers.
+- [x] Routers: `categories.py`, `expenses.py`, `audit.py`, `fx.py` (rates endpoint).
 - **Tests:** service unit tests with `FakeUnitOfWork` + `StaticFxProvider`; API integration tests with `TestClient` and dependency overrides; FX provider tested with `respx`; verify an audit row is written for each create/update/delete.
 - **Money tests (parametrized):** `1250.50`, `0.01`, `9999999999.99` accepted and returned unchanged; `12.345`, `"12.50"`, `true`, `0`, `-5` rejected with 422; `0.1 + 0.2`-style values stored exactly; USD→INR conversion rounds half-up to 2 places; OpenAPI schema for amount fields is `type: number`.
 

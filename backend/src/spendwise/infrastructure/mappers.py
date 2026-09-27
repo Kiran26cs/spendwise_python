@@ -1,10 +1,18 @@
 """Translate between ORM rows and pure domain objects (keeps SQLAlchemy out of the domain).
 
+Timestamps are normalised to UTC: PostgreSQL returns them in the session's time zone.
+
 Concepts: plain functions as adapters, keyword arguments, ``StrEnum`` conversion.
 """
 
+from datetime import UTC, datetime
+
 from spendwise.domain.models import AuditLogEntry, Category, Currency, Expense
 from spendwise.infrastructure.db import AuditLogRow, CategoryRow, ExpenseRow
+
+
+def _utc(value: datetime) -> datetime:
+    return value.astimezone(UTC)
 
 
 def category_to_domain(row: CategoryRow) -> Category:
@@ -32,8 +40,8 @@ def expense_to_domain(row: ExpenseRow) -> Expense:
         fx_rate=row.fx_rate,
         description=row.description,
         spent_on=row.spent_on,
-        created_at=row.created_at,
-        updated_at=row.updated_at,
+        created_at=_utc(row.created_at),
+        updated_at=_utc(row.updated_at),
     )
 
 
@@ -61,7 +69,7 @@ def audit_log_to_domain(row: AuditLogRow) -> AuditLogEntry:
         entity_id=row.entity_id,
         payload=row.payload,
         correlation_id=row.correlation_id,
-        occurred_at=row.occurred_at,
+        occurred_at=_utc(row.occurred_at),
     )
 
 

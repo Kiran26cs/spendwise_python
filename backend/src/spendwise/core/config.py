@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://spendwise:spendwise@localhost:5433/spendwise"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     log_json: bool = True
-    base_currency: str = "INR"
-    fx_api_url: str = "https://api.frankfurter.app"
+    base_currency: Literal["INR"] = "INR"  # fixed: amounts are stored converted to INR
+    fx_api_url: str = "https://api.frankfurter.dev/v1"
     fx_timeout_seconds: float = 5.0
     fx_cache_ttl_seconds: int = 3600
     cors_origins: list[str] = ["http://localhost:4200"]

@@ -1,11 +1,16 @@
 """Health endpoint, correlation ID header and Problem Details error responses."""
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
+from spendwise.api.deps import get_uow
 from spendwise.api.routers import health
+from spendwise.core.config import Settings
 from spendwise.core.exceptions import ConflictError
+from spendwise.infrastructure.fx_client import FrankfurterFxProvider
+from spendwise.infrastructure.unit_of_work import SqlAlchemyUnitOfWork
+from spendwise.main import create_app
 
 
 @pytest.fixture(autouse=True)
@@ -93,6 +98,16 @@ def test_unhandled_error_returns_500_without_stack_trace(app: FastAPI, client: T
     assert body["correlation_id"] == "cid-500"
     assert "secret" not in response.text
     assert "Traceback" not in response.text
+
+
+def test_production_wiring() -> None:
+    """Outside tests the app uses live FX rates and a SQLAlchemy Unit of Work on the event bus."""
+    app = create_app(Settings(environment="local", _env_file=None))
+    with TestClient(app):
+        assert isinstance(app.state.fx_provider, FrankfurterFxProvider)
+        uow = get_uow(Request({"type": "http", "app": app}))
+    assert isinstance(uow, SqlAlchemyUnitOfWork)
+    assert uow.publisher is app.state.event_bus
 
 
 def test_openapi_docs_available(client: TestClient) -> None:

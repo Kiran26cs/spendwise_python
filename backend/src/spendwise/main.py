@@ -17,25 +17,40 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from spendwise.api.routers import health
+from spendwise.api.routers import audit, categories, expenses, fx, health
 from spendwise.core.config import Settings, get_settings
 from spendwise.core.context import CORRELATION_ID_HEADER, correlation_id_var
 from spendwise.core.exceptions import SpendWiseError
 from spendwise.core.logging import configure_logging
 from spendwise.core.middleware import CorrelationIdMiddleware
 from spendwise.infrastructure.db import create_db_engine, create_session_factory
+from spendwise.infrastructure.fx_client import FrankfurterFxProvider, FxProvider, StaticFxProvider
+from spendwise.services.event_bus import create_event_bus
 
 logger = logging.getLogger(__name__)
 
 PROBLEM_JSON = "application/problem+json"
+API_PREFIX = "/api/v1"
+
+
+def _create_fx_provider(settings: Settings, http_client: httpx.AsyncClient) -> FxProvider:
+    """Static rates in tests (no network); the live Frankfurter API otherwise."""
+    if settings.environment == "test":
+        return StaticFxProvider()
+    return FrankfurterFxProvider(
+        http_client, settings.fx_api_url, cache_ttl_seconds=settings.fx_cache_ttl_seconds
+    )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Create shared resources on startup and release them on shutdown."""
     settings: Settings = app.state.settings
-    async with httpx.AsyncClient(timeout=settings.fx_timeout_seconds) as http_client:
+    async with httpx.AsyncClient(
+        timeout=settings.fx_timeout_seconds, follow_redirects=True
+    ) as http_client:
         app.state.http_client = http_client
+        app.state.fx_provider = _create_fx_provider(settings, http_client)
         logger.info("Application started", extra={"environment": settings.environment})
         yield
     app.state.engine.dispose()
@@ -120,6 +135,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = create_db_engine(settings.database_url)
     app.state.session_factory = create_session_factory(app.state.engine)
+    app.state.event_bus = create_event_bus()
 
     # Middleware added last runs first: correlation ID wraps CORS and everything else.
     app.add_middleware(
@@ -132,6 +148,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(CorrelationIdMiddleware)
 
     app.include_router(health.router)
+    for module in (categories, expenses, audit, fx):
+        app.include_router(module.router, prefix=API_PREFIX)
     return app
 
 

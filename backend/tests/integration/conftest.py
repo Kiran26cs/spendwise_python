@@ -10,12 +10,16 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine
 from sqlalchemy.orm import sessionmaker
 from testcontainers.community.postgres import PostgresContainer
 
+from spendwise.api.deps import get_uow
+from spendwise.core.config import Settings
 from spendwise.infrastructure.db import SessionFactory, create_db_engine
 from spendwise.infrastructure.unit_of_work import SqlAlchemyUnitOfWork
+from spendwise.main import create_app
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
@@ -63,3 +67,15 @@ def session_factory(connection: Connection) -> SessionFactory:
 @pytest.fixture
 def uow(session_factory: SessionFactory) -> SqlAlchemyUnitOfWork:
     return SqlAlchemyUnitOfWork(session_factory)
+
+
+@pytest.fixture
+def api(session_factory: SessionFactory) -> Iterator[TestClient]:
+    """The full app (static FX rates) with the Unit of Work bound to the test transaction."""
+    app = create_app(Settings(environment="test", _env_file=None))
+    event_bus = app.state.event_bus
+    app.dependency_overrides[get_uow] = lambda: SqlAlchemyUnitOfWork(
+        session_factory, publisher=event_bus
+    )
+    with TestClient(app) as client:
+        yield client

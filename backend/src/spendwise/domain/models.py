@@ -17,6 +17,7 @@ from typing import Any
 from spendwise.core.exceptions import DomainValidationError
 
 MONEY_QUANTUM = Decimal("0.01")
+RATE_QUANTUM = Decimal("0.000001")
 MAX_MONEY = Decimal("9999999999.99")  # NUMERIC(12, 2)
 MAX_FX_RATE = Decimal("999999999999.999999")  # NUMERIC(18, 6)
 MAX_CATEGORY_NAME = 50
@@ -122,6 +123,7 @@ class Category:
             _validate_decimal(
                 "monthly_budget", self.monthly_budget, places=2, maximum=MAX_MONEY, allow_zero=True
             )
+            self.monthly_budget = self.monthly_budget.quantize(MONEY_QUANTUM)
 
     def budget_status(self, spent: Decimal) -> BudgetStatus:
         """Compare ``spent`` (in base currency) against this category's budget."""
@@ -169,6 +171,10 @@ class Expense:
             raise DomainValidationError(f"fx_rate must be 1 for {BASE_CURRENCY} expenses")
         if self.amount_base != round_money(self.amount * self.fx_rate):
             raise DomainValidationError("amount_base must equal amount * fx_rate (rounded)")
+        # Canonical scale (exact: validation guarantees no extra digits): 12.5 -> 12.50
+        self.amount = self.amount.quantize(MONEY_QUANTUM)
+        self.amount_base = self.amount_base.quantize(MONEY_QUANTUM)
+        self.fx_rate = self.fx_rate.quantize(RATE_QUANTUM)
         self.description = self.description.strip()
         if len(self.description) > MAX_DESCRIPTION:
             raise DomainValidationError(f"description must be at most {MAX_DESCRIPTION} characters")
