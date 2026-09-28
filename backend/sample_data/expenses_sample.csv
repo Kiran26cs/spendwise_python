@@ -1,0 +1,13 @@
+spent_on,category,amount,currency,description
+2026-09-01,Groceries,1250.50,INR,Weekly vegetables
+2026-09-02,Dining,640.00,INR,Dinner with friends
+2026-09-03,Travel,45.00,USD,Airport taxi
+2026-09-04,Utilities,1899.00,INR,Electricity bill
+2026-09-06,Groceries,980.25,INR,Supermarket
+2026-09-08,Entertainment,499.00,INR,Movie tickets
+2026-09-10,Travel,120.00,EUR,Train Paris - Lyon
+2026-09-12,Health,350.00,INR,Pharmacy
+2026-09-14,Dining,18.50,SGD,"Hawker centre lunch, Singapore"
+2026-09-15,Utilities,799.00,INR,Mobile recharge
+2026-09-18,Groceries,2100.00,INR,Monthly stock-up
+2026-09-20,Entertainment,15.99,GBP,Streaming subscription

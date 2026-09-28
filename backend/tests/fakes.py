@@ -5,6 +5,7 @@ inheriting from them), ``copy``, ``dataclasses.replace``.
 """
 
 import copy
+from collections.abc import Iterable, Iterator
 from dataclasses import replace
 from datetime import date
 
@@ -78,6 +79,13 @@ class FakeExpenseRepository(FakeRepository[Expense]):
 
     def count_for_category(self, category_id: int) -> int:
         return sum(1 for e in self._items.values() if e.category_id == category_id)
+
+    def add_many(self, expenses: Iterable[Expense]) -> int:
+        return len([self.add(expense) for expense in expenses])
+
+    def iter_between(self, date_from: date, date_to: date) -> Iterator[Expense]:
+        matches = [e for e in self._items.values() if date_from <= e.spent_on <= date_to]
+        yield from sorted(matches, key=lambda e: (e.category_id, e.spent_on, e.id or 0))
 
 
 class FakeAuditLogRepository:

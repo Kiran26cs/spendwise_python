@@ -9,8 +9,9 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from spendwise.api.types import Budget, FxRate, Money
+from spendwise.api.types import Budget, DecimalOut, FxRate, Money
 from spendwise.domain.models import Currency
+from spendwise.services.report_service import MonthlyReport
 
 
 class ReadModel(BaseModel):
@@ -89,6 +90,64 @@ class AuditLogRead(ReadModel):
 class FxRatesRead(BaseModel):
     base: Currency
     rates: dict[Currency, FxRate]
+
+
+# --- Reports / imports ----------------------------------------------------------
+
+
+class CategoryReportLine(BaseModel):
+    category_id: int
+    category_name: str
+    expense_count: int
+    spent: DecimalOut
+    budget: DecimalOut | None
+    remaining: DecimalOut | None
+    used_percent: DecimalOut | None
+    over_budget: bool
+
+
+class MonthlyReportRead(BaseModel):
+    year: int
+    month: int
+    currency: Currency = Currency.INR
+    total_spent: DecimalOut
+    total_budget: DecimalOut
+    over_budget_count: int
+    categories: list[CategoryReportLine]
+
+    @classmethod
+    def from_report(cls, report: MonthlyReport) -> "MonthlyReportRead":
+        return cls(
+            year=report.year,
+            month=report.month,
+            total_spent=report.total_spent,
+            total_budget=report.total_budget,
+            over_budget_count=report.over_budget_count,
+            categories=[
+                CategoryReportLine(
+                    category_id=line.category_id,
+                    category_name=line.category_name,
+                    expense_count=line.expense_count,
+                    spent=line.status.spent,
+                    budget=line.status.budget,
+                    remaining=line.status.remaining,
+                    used_percent=line.status.used_percent,
+                    over_budget=line.status.over_budget,
+                )
+                for line in report.lines
+            ],
+        )
+
+
+class RowErrorRead(ReadModel):
+    row: int
+    message: str
+
+
+class ImportResultRead(ReadModel):
+    imported: int
+    failed: int
+    errors: list[RowErrorRead]
 
 
 # --- Generic wrappers -----------------------------------------------------------

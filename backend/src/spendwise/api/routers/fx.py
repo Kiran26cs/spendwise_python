@@ -30,7 +30,8 @@ def _parse_symbols(raw: str) -> list[Currency]:
 @router.get("/rates")
 async def get_rates(
     fx: FxProviderDep,
-    symbols: Annotated[str, Query(examples=["USD,EUR"])] = "USD,EUR,GBP,AED,SGD",
+    # AED is not published by Frankfurter (ECB rates); request it explicitly if needed.
+    symbols: Annotated[str, Query(examples=["USD,EUR"])] = "USD,EUR,GBP,SGD",
 ) -> FxRatesRead:
     """Rates as "1 INR = rate x symbol"."""
     rates = await fx.get_rates(BASE_CURRENCY, _parse_symbols(symbols))

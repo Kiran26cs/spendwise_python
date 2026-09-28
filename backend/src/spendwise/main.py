@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from spendwise.api.routers import audit, categories, expenses, fx, health
+from spendwise.api.routers import audit, categories, expenses, fx, health, imports, reports
 from spendwise.core.config import Settings, get_settings
 from spendwise.core.context import CORRELATION_ID_HEADER, correlation_id_var
 from spendwise.core.exceptions import SpendWiseError
@@ -148,7 +148,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(CorrelationIdMiddleware)
 
     app.include_router(health.router)
-    for module in (categories, expenses, audit, fx):
+    for module in (categories, expenses, reports, imports, audit, fx):
         app.include_router(module.router, prefix=API_PREFIX)
     return app
 

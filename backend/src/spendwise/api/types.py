@@ -53,3 +53,10 @@ FxRate = Annotated[
     WithJsonSchema({"type": "number", "multipleOf": 0.000001, "exclusiveMinimum": 0}),
 ]
 """A positive exchange rate with at most 6 decimal places."""
+
+DecimalOut = Annotated[
+    Decimal,
+    PlainSerializer(float, return_type=float, when_used="json"),
+    WithJsonSchema({"type": "number"}),
+]
+"""Response-only computed number (totals, remaining budget, percentages); may be negative."""

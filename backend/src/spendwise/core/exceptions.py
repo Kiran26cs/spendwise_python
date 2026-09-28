@@ -36,6 +36,13 @@ class ConflictError(SpendWiseError):
     title = "Conflict"
 
 
+class PayloadTooLargeError(SpendWiseError):
+    """An uploaded file exceeds the configured size limit."""
+
+    status_code = 413
+    title = "Content Too Large"
+
+
 class ExternalServiceError(SpendWiseError):
     """A downstream service (e.g. the FX API) failed."""
 

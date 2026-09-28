@@ -12,12 +12,15 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy import Engine
 
+from spendwise.core.config import Settings
 from spendwise.infrastructure.db import SessionFactory
 from spendwise.infrastructure.fx_client import FxProvider
 from spendwise.infrastructure.unit_of_work import AbstractUnitOfWork, SqlAlchemyUnitOfWork
 from spendwise.services.category_service import CategoryService
 from spendwise.services.event_bus import EventBus
 from spendwise.services.expense_service import ExpenseService
+from spendwise.services.importer import ExpenseImporter
+from spendwise.services.report_service import ReportService
 
 
 def get_engine(request: Request) -> Engine:
@@ -48,6 +51,23 @@ def get_expense_service(uow: UowDep) -> ExpenseService:
     return ExpenseService(uow)
 
 
+def get_report_service(uow: UowDep) -> ReportService:
+    return ReportService(uow)
+
+
+def get_importer(uow: UowDep) -> ExpenseImporter:
+    return ExpenseImporter(uow)
+
+
+def get_settings_dep(request: Request) -> Settings:
+    """The settings the app was created with (may differ from the environment in tests)."""
+    settings: Settings = request.app.state.settings
+    return settings
+
+
 CategoryServiceDep = Annotated[CategoryService, Depends(get_category_service)]
 ExpenseServiceDep = Annotated[ExpenseService, Depends(get_expense_service)]
+ReportServiceDep = Annotated[ReportService, Depends(get_report_service)]
+ImporterDep = Annotated[ExpenseImporter, Depends(get_importer)]
+SettingsDep = Annotated[Settings, Depends(get_settings_dep)]
 FxProviderDep = Annotated[FxProvider, Depends(get_fx_provider)]

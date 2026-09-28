@@ -5,10 +5,11 @@ tests use in-memory fakes (``tests/fakes.py``).
 
 Concepts: ``typing.Protocol`` (structural typing), generics with PEP 695 syntax
 (``class Repo[D, R]``), abstract methods, keyword-only args, tuples as return values,
-SQLAlchemy 2.0 ``select()`` queries.
+generators (``yield``) for streaming results, SQLAlchemy 2.0 ``select()`` queries.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 from datetime import date
 from typing import Protocol
 
@@ -51,6 +52,8 @@ class ExpenseRepository(Protocol):
         category_id: int | None = None,
     ) -> tuple[list[Expense], int]: ...
     def count_for_category(self, category_id: int) -> int: ...
+    def add_many(self, expenses: Iterable[Expense]) -> int: ...
+    def iter_between(self, date_from: date, date_to: date) -> Iterator[Expense]: ...
 
 
 class AuditLogRepository(Protocol):
@@ -193,6 +196,27 @@ class SqlAlchemyExpenseRepository(SqlAlchemyRepository[Expense, ExpenseRow]):
     def count_for_category(self, category_id: int) -> int:
         stmt = select(func.count()).where(ExpenseRow.category_id == category_id)
         return self.session.scalar(stmt) or 0
+
+    def add_many(self, expenses: Iterable[Expense]) -> int:
+        """Insert many expenses with a single flush; return how many were added."""
+        rows = [self._to_row(expense) for expense in expenses]
+        self.session.add_all(rows)
+        self.session.flush()
+        return len(rows)
+
+    def iter_between(self, date_from: date, date_to: date) -> Iterator[Expense]:
+        """Stream expenses in ``[date_from, date_to]`` ordered by category (for grouping).
+
+        A generator: rows are fetched from the database in chunks as the caller iterates.
+        """
+        stmt = (
+            select(ExpenseRow)
+            .where(ExpenseRow.spent_on.between(date_from, date_to))
+            .order_by(ExpenseRow.category_id, ExpenseRow.spent_on, ExpenseRow.id)
+            .execution_options(yield_per=500)
+        )
+        for row in self.session.scalars(stmt):
+            yield self._to_domain(row)
 
 
 class SqlAlchemyAuditLogRepository:

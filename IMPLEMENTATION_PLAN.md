@@ -488,11 +488,11 @@ Each phase ends with all quality gates green (Section 10) and a short summary of
 
 ### Phase 5 — Reports, Import, Export
 
-- [ ] `services/report_service.py`: monthly report using generator pipelines, `itertools.groupby`, `collections.defaultdict`, `functools.reduce`, `Decimal` rounding.
-- [ ] `services/importer.py`: stream uploaded file with `csv.DictReader` via a generator; validate row by row; insert in batches with `itertools.batched(rows, 100)`; collect errors; publish `ExpensesImported`.
-- [ ] `services/exporters.py`: `Exporter` protocol, `CsvExporter`, `JsonExporter`, `get_exporter(fmt)` factory (dict registry).
-- [ ] Routers: `reports.py`, `imports.py`.
-- [ ] `sample_data/expenses_sample.csv`, `scripts/seed.py` (argparse: `--categories`, `--expenses N`, `--reset`; `if __name__ == "__main__":`).
+- [x] `services/report_service.py`: monthly report using generator pipelines, `itertools.groupby`, `collections.defaultdict`, `functools.reduce`, `Decimal` rounding.
+- [x] `services/importer.py`: stream uploaded file with `csv.DictReader` via a generator; validate row by row; insert in batches with `itertools.batched(rows, 100)`; collect errors; publish `ExpensesImported`.
+- [x] `services/exporters.py`: `Exporter` protocol, `CsvExporter`, `JsonExporter`, `get_exporter(fmt)` factory (dict registry).
+- [x] Routers: `reports.py`, `imports.py`.
+- [x] `sample_data/expenses_sample.csv`, `scripts/seed.py` (argparse: `--categories`, `--expenses N`, `--reset`; `if __name__ == "__main__":`).
 - **Tests:** report totals and budget flags; import with mixed valid/invalid rows; exporters produce correct output; file-size limit enforced.
 
 ### Phase 6 — Hardening & Delivery
