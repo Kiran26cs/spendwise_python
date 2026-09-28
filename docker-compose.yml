@@ -15,5 +15,22 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Inside the compose network Postgres is reached by service name on its container port.
+      DATABASE_URL: postgresql+psycopg://spendwise:spendwise@postgres:5432/spendwise
+      ENVIRONMENT: prod
+      LOG_JSON: "true"
+      LOG_LEVEL: INFO
+      # "Today" for the no-future-dates rule follows the container's time zone.
+      TZ: ${TZ:-Asia/Kolkata}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
 volumes:
   pgdata:

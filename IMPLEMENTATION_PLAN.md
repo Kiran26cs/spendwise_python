@@ -497,10 +497,10 @@ Each phase ends with all quality gates green (Section 10) and a short summary of
 
 ### Phase 6 — Hardening & Delivery
 
-- [ ] `backend/Dockerfile` (multi-stage, non-root user, `uv sync --frozen`).
-- [ ] Add the `api` service to `docker-compose.yml` (`frontend` added in Phase 7); run Alembic migrations on start.
-- [ ] Coverage ≥ **80%**; `mypy --strict` and `ruff` clean.
-- [ ] README: setup, run, test, env vars, architecture diagram, concept map link.
+- [x] `backend/Dockerfile` (multi-stage, non-root user, `uv sync --frozen`).
+- [x] Add the `api` service to `docker-compose.yml` (`frontend` added in Phase 7); run Alembic migrations on start.
+- [x] Coverage ≥ **80%**; `mypy --strict` and `ruff` clean.
+- [x] README: setup, run, test, env vars, architecture diagram, concept map link.
 
 ### Phase 7 — Angular UI
 
